@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: [null, Validators.required],
-      password: [null, Validators.required]     
+      password: [null, Validators.required]
     });
 
     // throw new Error('Method not implemented.');
@@ -49,11 +49,11 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/sign-up']);
   }
 
-  onContact() {       
-    if (this.loginForm.valid) { 
+  onContact() {
+    if (this.loginForm.valid) {
       this.loginService.GetUser(this.loginForm.value).subscribe((res:IApiResponse)=>{
         if (res.isSuccess) {
-          this.router.navigate(['/contacts']);
+          this.router.navigate(['/contact']);
         } else {
           alert(res.messsage);
         }

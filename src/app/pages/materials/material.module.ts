@@ -85,6 +85,7 @@ const material = [
   MatTreeModule,
   ScrollingModule,
   MatMomentDateModule
+
 ];
 
 @NgModule({

@@ -1,16 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { throwToolbarMixedModesError } from '@angular/material/toolbar';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import { AuthorizationService } from '../pages/services/authorization.service';
+import { signupService } from '../pages/services/registration.service';
 
+interface IApiResponse {
+  messsage? : string,
+  isSuccess? : boolean
+}
 
 @Component({
   selector: 'app-autherization',
   templateUrl: './autherization.component.html',
   styleUrls: ['./autherization.component.css']
 })
+
+
 export class AutherizationComponent implements OnInit {
 
   formId = 'autherization';
@@ -18,6 +26,7 @@ export class AutherizationComponent implements OnInit {
   currentDate   : any= moment().format('YYYY-MM-DDThh:mm:ssZ');
   loginUser     : string;
   subscription  : Subscription;
+  approveSub    : Subscription;
   fetch_data    : any;
   submitObj = {};
 
@@ -26,8 +35,9 @@ export class AutherizationComponent implements OnInit {
     'firstName',
     'lastName',
     'phoneNumber',
-    'password',
-    'isautherized'
+    // 'password',
+    'isAutherized',
+    'action'
   ];
 
   dataSource =  new MatTableDataSource();
@@ -35,6 +45,7 @@ export class AutherizationComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public authorizationService :AuthorizationService,
+    public signupService: signupService,
   ) { }
 
   ngOnInit(): void {
@@ -44,7 +55,7 @@ export class AutherizationComponent implements OnInit {
 
     this.form = this.fb.group({
       id            : [],
-      isAuthorized  : [''],
+      isAuthorized  : ['']
       // update_date   : [this.currentDate],
       // order_date    : [this.currentDate]
     });
@@ -53,36 +64,31 @@ export class AutherizationComponent implements OnInit {
 
   }
 
-  // approvalFlag(event,id){
-  //   let userId= this.loginUser;
-  //   let date = this.currentDate;
-  //   let status = 'APR';
-  //    let order_date =this.currentDate;
-  //   this.commonService.showDialog(
-  //     {
-  //       title: 'Confirmation - Approve System',
-  //       content: 'Are you sure to approve this?',
-  //     },
-  //     () => 
-  //       this.proposeService.updateProposeApproval({order_flag:event.value, Id: id,update_by: userId ,update_date: date,order_date:order_date ,status: status }).subscribe(update => {
-  //         this.commonService.showSuccessMsg('Data Successfully updated.');
-  //         this.getProposeApproval();
-  //         this.asyncService.finish();
-  //       }, error => {
-  //         console.log('Error to Approve of propose transfer!');
-  //         this.asyncService.finish();
-  //     })
-  //   );
-  // }
+  onAuthorized(value:string, element: any) {
+      element.isAuthorized = value;
+      console.log('adsfsdaf ', element);
+
+     this.approveSub = this.authorizationService.authorizedUser(element).subscribe((res: IApiResponse)=> {
+      if (res.isSuccess) {
+        this.authorizationService.sendMailWthOtp(element.email, element.password).subscribe((res: IApiResponse)=> {
+          alert('Successfully Athorized!');
+          this.getAuthorizationData();
+        });
+        } else {
+          alert('Successfully Error!');
+        }
+      })
+  }
+
+
 
   getAuthorizationData(){
     this.subscription =
     this.authorizationService.getAuthList().subscribe((getData) => {
 
         this.fetch_data = getData;
-        this.dataSource.data = this.fetch_data ;        
-      console.log('Karishoma  ', this.fetch_data);
-      
+        this.dataSource.data = this.fetch_data;
+
     });
   }
 
